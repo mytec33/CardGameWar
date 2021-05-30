@@ -1,4 +1,6 @@
-﻿namespace CardGameWar
+﻿using System;
+
+namespace CardGameWar
 {
     class Player
     {
@@ -52,14 +54,26 @@
             return false;
         }
 
+        public void ClearWarDeck()
+        {
+            Console.WriteLine($"{Name}: clearing war deck");
+
+            WarDeck.ClearDeck();
+        }
+
+        public int CountAllDecks()
+        {
+            return Deck.CountCards() + SideDeck.CountCards() + WarDeck.CountCards();
+        }
+
         public int CountDeck()
         {
             return Deck.CountCards();
         }
 
-        public string CountSideDeck()
+        public int CountSideDeck()
         {
-            return SideDeck.CountCards().ToString();
+            return SideDeck.CountCards();
         }
 
         public string CountWarDeck()
@@ -72,7 +86,7 @@
             Card = Deck.DrawCard();
         }
 
-        public void DrawThree()
+        public void DrawThreeIntoWarDeck()
         {
             for(int x = 1; x <= 3; x++)
             {
@@ -94,9 +108,6 @@
             Deck.Shuffle();
         }
 
-        public void ClearWarDeck()
-        {
-            WarDeck.ClearDeck();
-        }
+
     }
 }

@@ -10,44 +10,31 @@ namespace CardGameWar
             Player player2 = new Player("Player 2");
 
             Game game = new Game(player1, player2);
-
-            int rounds = 0;
+            game.DisplayRounds();
 
             while(true)
             {
                 try
                 {
-                    if (player1.CountDeck() == 0 ||
-                        player2.CountDeck() == 0)
+                    if (player1.AllDecksEmpty() ||
+                        player2.AllDecksEmpty())
                     {
-                        player1.ResetDeck();
-                        player2.ResetDeck();
-
-                        rounds++;
+                        game.EndGame();
                     }
 
-                    if (player1.AllDecksEmpty())
+                    if (game.DeckEmpty())
                     {
-                        Console.WriteLine($"Player 1 WON!!!!!!!!!!!!!!!\n{rounds} rounds");
-                        break;
-                    }
-                    else if (player2.AllDecksEmpty())
-                    {
-                        Console.WriteLine($"Player 2 WON!!!!!!!!!!!!!!!\n{rounds} rounds");
-                        break;
+                        game.ResetDecks();
                     }
 
                     game.Draw();
-                    game.DisplayDeckStatus(player1);
-                    game.DisplayDeckStatus(player2);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error drawing card: {ex.Message}");
+                    game.EndGame();
                 }
             }
-
-            Console.ReadKey();
         }
     }
 }
