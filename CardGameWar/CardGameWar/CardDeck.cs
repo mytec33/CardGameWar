@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CardGameWar
 {
 
-    class CardDeck
+    class CardDeck: IEnumerable
     {
         private List<Card> Deck;
         public string Name { get; private set; }
@@ -16,14 +17,6 @@ namespace CardGameWar
         {
             Deck = new List<Card>();
             Name = name;
-
-            foreach(Card.CardRank r in Enum.GetValues(typeof(Card.CardRank)))
-            {
-                foreach(Card.CardSuit s in Enum.GetValues(typeof(Card.CardSuit)))
-                {
-                    Deck.Add(new Card(r, s));
-                }
-            }
         }
 
         public void ClearDeck()
@@ -54,6 +47,17 @@ namespace CardGameWar
             }
 
             return Deck[0];
+        }
+
+        public void GenerateFullDeck()
+        {
+            foreach (Card.CardRank r in Enum.GetValues(typeof(Card.CardRank)))
+            {
+                foreach (Card.CardSuit s in Enum.GetValues(typeof(Card.CardSuit)))
+                {
+                    Deck.Add(new Card(r, s));
+                }
+            }
         }
 
         public void RemoveCard(Card card)
@@ -91,6 +95,14 @@ namespace CardGameWar
             }
 
             return sb.ToString();
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            foreach(Card card in Deck)
+            {
+                yield return card;
+            }
         }
     }
 }

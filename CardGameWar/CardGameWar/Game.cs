@@ -7,17 +7,52 @@ namespace CardGameWar
     {
         private const int MIN_CARDS_FOR_WAR = 4;
 
+        private CardDeck Deck;
         private Player Player1;
         private Player Player2;
 
+        private bool GameOver = false;
+        private bool Verbose;
+
         public int Rounds { get; private set; }
+        public string Winner;
 
         public Game(Player player1, Player player2)
         {
             Player1 = player1;
             Player2 = player2;
 
+            Deck = new CardDeck("Main Deck");
+            Deck.GenerateFullDeck();
+            Deck.Shuffle();
+            SplitDeck(Deck);
+
             Rounds = 1;
+        }
+
+        public void EnableVerbose(bool verosity)
+        {
+            Verbose = verosity;
+
+            if (Verbose)
+            {
+                Player1.EnableVerbose(Verbose);
+                Player2.EnableVerbose(Verbose);
+            }
+        }
+
+        public void SplitDeck(CardDeck deck)
+        {
+            int x = 0;
+            foreach(Card card in deck)
+            {
+                if (x % 2 == 0)
+                    Player1.AddCardToDeck(card);
+                else
+                    Player2.AddCardToDeck(card);
+
+                x++;
+            }
         }
 
         public void ClearWarDecks(Player player1, Player player2)
@@ -41,28 +76,34 @@ namespace CardGameWar
         {
             if (Player1.AllDecksEmpty())
             {
+                Winner = "Player 2";
                 return $"Player 2 WON!!!!!!!!!!!!!!!";
             }
             else if (Player2.AllDecksEmpty())
             {
+                Winner = "Player 1";
                 return $"Player 1 WON!!!!!!!!!!!!!!!";
             }
             else
             {
+                Winner = "Draw";
                 return $"It's a draw!! No more cards for war when already engaged in war.";
             }
         }
 
         public void Draw()
         {
+            Debug.Assert(Player1.CountDeck() != 0);
+            Debug.Assert(Player2.CountDeck() != 0);
+
             Player1.DrawCard();
             Player2.DrawCard();
 
-            Console.WriteLine($"{Player1.Card} vs {Player2.Card}");
+            WriteMessage($"{Player1.Card} vs {Player2.Card}");
 
             if (Player1.Card.Rank > Player2.Card.Rank)
-            { 
-                Console.WriteLine($"{Player1.Name} won");
+            {
+                WriteMessage($"{Player1.Name} won");
                 Player1.AddDrawnCardSideDeck(Player1.Card);
                 Player1.AddDrawnCardSideDeck(Player2.Card);
                 Player1.RemoveDrawnCard();
@@ -70,7 +111,7 @@ namespace CardGameWar
             }
             else if (Player1.Card.Rank < Player2.Card.Rank)
             {
-                Console.WriteLine($"{Player2.Name} won");
+                WriteMessage($"{Player2.Name} won");
                 Player2.AddDrawnCardSideDeck(Player1.Card);
                 Player2.AddDrawnCardSideDeck(Player2.Card);
                 Player1.RemoveDrawnCard();
@@ -78,7 +119,7 @@ namespace CardGameWar
             }
             else
             {
-                Console.WriteLine("WAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                WriteMessage("WAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", false);
                 DisplayDeckStatus(Player1);
                 DisplayDeckStatus(Player2);
 
@@ -87,7 +128,7 @@ namespace CardGameWar
                 if ((Player1.CountDeck() + Player1.CountSideDeck() < MIN_CARDS_FOR_WAR) ||
                     Player2.CountDeck() + Player2.CountSideDeck() < MIN_CARDS_FOR_WAR)
                 {
-                    Console.WriteLine("Skipping war. Not enough total cards.");
+                    WriteMessage("Skipping war. Not enough total cards.");
                     Player1.AddDrawnCardSideDeck(Player1.Card);
                     Player2.AddDrawnCardSideDeck(Player2.Card);
                     Player1.RemoveDrawnCard();
@@ -102,7 +143,7 @@ namespace CardGameWar
                 if (Player1.CountDeck() <= MIN_CARDS_FOR_WAR ||
                     Player2.CountDeck() <= MIN_CARDS_FOR_WAR)
                 {
-                    Console.WriteLine("Not enough cards in deck, resetting.");
+                    WriteMessage("Not enough cards in deck, resetting.");
                     ResetDecks();
                 }
 
@@ -112,7 +153,7 @@ namespace CardGameWar
 
         private void DrawThree()
         {
-            Console.WriteLine("Entering DrawThree()");
+            WriteMessage("Entering DrawThree()");
             DisplayDeckStatus(Player1);
             DisplayDeckStatus(Player2);
 
@@ -124,7 +165,7 @@ namespace CardGameWar
             Player1.DrawCard();
             Player2.DrawCard();
 
-            Console.WriteLine($"{Player1.Card} vs {Player2.Card}");
+            WriteMessage($"{Player1.Card} vs {Player2.Card}");
 
             Player1.AddDrawnCardWarDeck(Player1.Card);
             Player2.AddDrawnCardWarDeck(Player2.Card);
@@ -133,7 +174,7 @@ namespace CardGameWar
 
             if (Player1.Card.Rank > Player2.Card.Rank)
             {
-                Console.WriteLine($"{Player1.Name} won the war!");
+                WriteMessage($"{Player1.Name} won the war!");
 
                 Player1.AddWarDeckToSideDeck(Player1);
                 Player1.AddWarDeckToSideDeck(Player2);
@@ -141,14 +182,14 @@ namespace CardGameWar
             }
             else if (Player1.Card.Rank < Player2.Card.Rank)
             {
-                Console.WriteLine($"{Player2.Name} won the war!");
+                WriteMessage($"{Player2.Name} won the war!");
 
                 Player2.AddWarDeckToSideDeck(Player1);
                 Player2.AddWarDeckToSideDeck(Player2);
             }
             else
             {
-                Console.WriteLine("WAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                WriteMessage("WAR LOOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", false);
                 DisplayDeckStatus(Player1);
                 DisplayDeckStatus(Player2);
 
@@ -165,7 +206,10 @@ namespace CardGameWar
                     EndGame();
                 }
 
-                DrawThree();
+                if (!GameOver)
+                {
+                    DrawThree();
+                }
             }
 
             ClearWarDecks(Player1, Player2);
@@ -173,7 +217,7 @@ namespace CardGameWar
 
         public void DisplayDeckStatus(Player player)
         {
-            Console.WriteLine($"{player.Name} - Cards: {player.CountDeck()} " +
+            WriteMessage($"{player.Name} - Cards: {player.CountDeck()} " +
                 $"side deck: {player.CountSideDeck()} " +
                 $"war deck: {player.CountWarDeck()}");
         }
@@ -182,7 +226,7 @@ namespace CardGameWar
         {
             if (Rounds != 0)
             {
-                Console.WriteLine($"Rounds: {Rounds}");
+                WriteMessage($"Rounds: {Rounds}");
             }
         }
 
@@ -190,15 +234,33 @@ namespace CardGameWar
         {
             Console.WriteLine("Ending game");
 
-            DisplayDeckStatus(Player1);
-            DisplayDeckStatus(Player2);
-            DisplayRounds();
-            Console.WriteLine(DetermineWinner());
+            GameOver = true;
+            DetermineWinner();
+            Console.WriteLine($"Winner: {Winner}");
+            Console.WriteLine($"Rounds: {Rounds}");
+        }
 
-            Console.Write("Press any key to end...");
-            Console.ReadKey();
+        public void Play()
+        {
+            while (true)
+            {
+                if (Player1.AllDecksEmpty() ||
+                    Player2.AllDecksEmpty())
+                {
+                    EndGame();
+                    break;
+                }
 
-            Environment.Exit(0);
+                if (DeckEmpty())
+                {
+                    ResetDecks();
+                }
+
+                DisplayDeckStatus(Player1);
+                DisplayDeckStatus(Player2);
+                Draw();
+
+            }
         }
 
         public void ResetDecks()
@@ -209,9 +271,15 @@ namespace CardGameWar
             Player1.ResetDeck();
             Player2.ResetDeck();
 
-            Debug.Assert(Player1.CountAllDecks() + Player2.CountAllDecks() == 104);
+            Debug.Assert(Player1.CountAllDecks() + Player2.CountAllDecks() == 52);
             Debug.Assert(Player1.CountAllDecks() != 0);
             Debug.Assert(Player2.CountAllDecks() != 0);
+        }
+
+        public void WriteMessage(string message, bool ignore = false)
+        {
+            if (Verbose || ignore)
+                Console.WriteLine(message);
         }
     }
 }

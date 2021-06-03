@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace CardGameWar
 {
@@ -7,6 +8,8 @@ namespace CardGameWar
         private CardDeck Deck;
         private CardDeck SideDeck;
         private CardDeck WarDeck;
+
+        private bool Verbose;
 
         public Card Card;
         public string Name;
@@ -22,6 +25,16 @@ namespace CardGameWar
             SideDeck.ClearDeck();
             WarDeck = new CardDeck(name);
             WarDeck.ClearDeck();
+        }
+
+        public void EnableVerbose(bool verbosity)
+        {
+            Verbose = verbosity;
+        }
+
+        public void AddCardToDeck(Card card)
+        {
+            Deck.AddCard(card);
         }
 
         public void AddDrawnCardSideDeck(Card card)
@@ -56,7 +69,7 @@ namespace CardGameWar
 
         public void ClearWarDeck()
         {
-            Console.WriteLine($"{Name}: clearing war deck");
+            WriteMessage($"{Name}: clearing war deck");
 
             WarDeck.ClearDeck();
         }
@@ -83,6 +96,8 @@ namespace CardGameWar
 
         public void DrawCard()
         {
+            Debug.Assert(Deck.CountCards() > 0);
+
             Card = Deck.DrawCard();
         }
 
@@ -108,6 +123,10 @@ namespace CardGameWar
             Deck.Shuffle();
         }
 
-
+        private void WriteMessage(string message)
+        {
+            if (Verbose)
+                Console.WriteLine(message);
+        }
     }
 }
