@@ -69,7 +69,8 @@ namespace CardGameWar
 
         public void ClearWarDeck()
         {
-            WriteMessage($"{Name}: clearing war deck");
+            if (Verbose)
+                WriteMessage($"{Name}: clearing war deck");
 
             WarDeck.ClearDeck();
         }
