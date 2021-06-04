@@ -17,20 +17,24 @@ namespace CardGameWar
         public int Rounds { get; private set; }
         public string Winner;
 
-        public Game(Player player1, Player player2)
+        public Game(Player player1, Player player2, bool verbose)
         {
             Player1 = player1;
             Player2 = player2;
+           
+            EnableVerbose(verbose);
 
             Deck = new CardDeck("Main Deck");
             Deck.GenerateFullDeck();
             Deck.Shuffle();
             SplitDeck(Deck);
 
+            Debug.Assert(Player1.CountAllDecks() + Player2.CountAllDecks() == 52);
+
             Rounds = 1;
         }
 
-        public void EnableVerbose(bool verosity)
+        private void EnableVerbose(bool verosity)
         {
             Verbose = verosity;
 
@@ -128,7 +132,7 @@ namespace CardGameWar
                 if ((Player1.CountDeck() + Player1.CountSideDeck() < MIN_CARDS_FOR_WAR) ||
                     Player2.CountDeck() + Player2.CountSideDeck() < MIN_CARDS_FOR_WAR)
                 {
-                    WriteMessage("Skipping war. Not enough total cards.");
+                    WriteMessage("Skipping war. Not enough total cards.", false);
                     Player1.AddDrawnCardSideDeck(Player1.Card);
                     Player2.AddDrawnCardSideDeck(Player2.Card);
                     Player1.RemoveDrawnCard();
@@ -143,7 +147,7 @@ namespace CardGameWar
                 if (Player1.CountDeck() <= MIN_CARDS_FOR_WAR ||
                     Player2.CountDeck() <= MIN_CARDS_FOR_WAR)
                 {
-                    WriteMessage("Not enough cards in deck, resetting.");
+                    WriteMessage("Not enough cards in deck, resetting.", false);
                     ResetDecks();
                 }
 
@@ -174,7 +178,7 @@ namespace CardGameWar
 
             if (Player1.Card.Rank > Player2.Card.Rank)
             {
-                WriteMessage($"{Player1.Name} won the war!");
+                WriteMessage($"{Player1.Name} won the war!", false);
 
                 Player1.AddWarDeckToSideDeck(Player1);
                 Player1.AddWarDeckToSideDeck(Player2);
@@ -182,7 +186,7 @@ namespace CardGameWar
             }
             else if (Player1.Card.Rank < Player2.Card.Rank)
             {
-                WriteMessage($"{Player2.Name} won the war!");
+                WriteMessage($"{Player2.Name} won the war!", false);
 
                 Player2.AddWarDeckToSideDeck(Player1);
                 Player2.AddWarDeckToSideDeck(Player2);
@@ -203,6 +207,7 @@ namespace CardGameWar
                 if ((Player1.CountDeck() + Player1.CountSideDeck() < MIN_CARDS_FOR_WAR) ||
                      Player2.CountDeck() + Player2.CountSideDeck() < MIN_CARDS_FOR_WAR)
                 {
+                    WriteMessage("Not enough cards to continue play. Draw.");
                     EndGame();
                 }
 
@@ -219,30 +224,30 @@ namespace CardGameWar
         {
             WriteMessage($"{player.Name} - Cards: {player.CountDeck()} " +
                 $"side deck: {player.CountSideDeck()} " +
-                $"war deck: {player.CountWarDeck()}");
+                $"war deck: {player.CountWarDeck()}", false);
         }
 
         public void DisplayRounds()
         {
             if (Rounds != 0)
             {
-                WriteMessage($"Rounds: {Rounds}");
+                WriteMessage($"Rounds: {Rounds}", false);
             }
         }
 
         public void EndGame()
         {
-            Console.WriteLine("Ending game");
+            WriteMessage("Ending game");
 
             GameOver = true;
             DetermineWinner();
-            Console.WriteLine($"Winner: {Winner}");
-            Console.WriteLine($"Rounds: {Rounds}");
+            WriteMessage($"Winner: {Winner}");
+            WriteMessage($"Rounds: {Rounds}");
         }
 
         public void Play()
         {
-            while (true)
+            while (!GameOver)
             {
                 if (Player1.AllDecksEmpty() ||
                     Player2.AllDecksEmpty())
@@ -253,6 +258,7 @@ namespace CardGameWar
 
                 if (DeckEmpty())
                 {
+                    WriteMessage($"Rounds: {Rounds}");
                     ResetDecks();
                 }
 
