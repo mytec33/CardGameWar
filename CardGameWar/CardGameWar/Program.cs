@@ -10,41 +10,37 @@ namespace CardGameWar
     {
         static void Main(string[] args)
         {
-            int processors = 5;
+            if (args.Length != 1)
+            {
+                Console.WriteLine("You must specify the number of processors.");
+                Environment.Exit(1);
+            }
+
+            int processors = 1;
+            if (int.TryParse(args[0], out int result))
+            {
+                processors = result;
+            }
+            else
+            {
+                Console.WriteLine("Cannot parse number of processors. Exiting.");
+                Environment.Exit(2);
+            }
+                
             int iterations = 1200000 / processors;
 
+            Console.WriteLine($"Processors: {processors}");
+            Console.WriteLine($"Games / processor: {iterations.ToString("#,###")}");
             Console.WriteLine("# = 1,000");
 
-            Stopwatch sw = new Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
 
-            Task task1 = Task.Run(() => RunGame(iterations));
-            Task task2 = Task.Run(() => RunGame(iterations));
-            Task task3 = Task.Run(() => RunGame(iterations));
-            Task task4 = Task.Run(() => RunGame(iterations));
-            Task task5 = Task.Run(() => RunGame(iterations));
-            //Task task6 = Task.Run(() => RunGame(iterations));
-            //Task task7 = Task.Run(() => RunGame(iterations));
-            //Task task8 = Task.Run(() => RunGame(iterations));
-            //Task task9 = Task.Run(() => RunGame(iterations));
-            //Task task10 = Task.Run(() => RunGame(iterations));
-            //Task task11 = Task.Run(() => RunGame(iterations));
-            //Task task12 = Task.Run(() => RunGame(iterations));
-
-
-
-            task1.Wait();
-            task2.Wait();
-            task3.Wait();
-            task4.Wait();
-            task5.Wait();
-            //task6.Wait();
-            //task7.Wait();
-            //task8.Wait();
-            //task9.Wait();
-            //task10.Wait();
-            //task11.Wait();
-            //task12.Wait();
+            Parallel.For(0, processors, i =>
+            {
+                Console.WriteLine($"Starting task {i}");
+                RunGame(iterations);
+            });
 
             sw.Stop();
             TimeSpan ts = sw.Elapsed;

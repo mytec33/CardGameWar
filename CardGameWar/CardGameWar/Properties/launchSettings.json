@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CardGameWar": {
+      "commandName": "Project",
+      "commandLineArgs": "2"
+    }
+  }
+}
